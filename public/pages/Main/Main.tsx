@@ -337,7 +337,7 @@ export default class Main extends Component<MainProps, MainState> {
     const { landingPage } = this.props;
 
     const ROUTE_STYLE = { padding: "25px 25px" };
-    const DataSourceMenu = this.props.dataSourceManagement?.ui?.DataSourceMenu;
+    const DataSourceMenu = this.props.dataSourceManagement?.ui?.getDataSourceMenu();
 
     return (
       <CoreServicesConsumer>
@@ -382,22 +382,22 @@ export default class Main extends Component<MainProps, MainState> {
                                 ]}
                                 render={(props) => (
                                   <DataSourceMenu
-                                    appName={"Index State Management"}
                                     setMenuMountPoint={this.props.setActionMenu}
-                                    showDataSourceView={true}
-                                    selectedOption={(() => {
-                                      if (this.state.dataSourceId && this.state.dataSourceId !== "") {
-                                        return [
-                                          {
-                                            id: this.state.dataSourceId,
-                                            label: this.state.dataSourceLabel,
-                                          },
-                                        ];
-                                      }
-                                      return undefined;
-                                    })()}
-                                    fullWidth={false}
-                                    hideLocalCluster={false}
+                                    componentType={"DataSourceView"}
+                                    componentConfig={{
+                                      fullWidth: false,
+                                      activeOption: (() => {
+                                        if (this.state.dataSourceId && this.state.dataSourceId !== "") {
+                                          return [
+                                            {
+                                              id: this.state.dataSourceId,
+                                              label: this.state.dataSourceLabel,
+                                            },
+                                          ];
+                                        }
+                                        return undefined;
+                                      })(),
+                                    }}
                                   />
                                 )}
                               />
@@ -421,28 +421,27 @@ export default class Main extends Component<MainProps, MainState> {
                                 ]}
                                 render={() => (
                                   <DataSourceMenu
-                                    appName={"Index State Management"}
                                     setMenuMountPoint={this.props.setActionMenu}
-                                    showDataSourceSelectable={true}
-                                    dataSourceCallBackFunc={({ id: dataSourceId, label: dataSourceLabel }) => {
-                                      this.setState({ dataSourceId, dataSourceLabel });
+                                    componentType={"DataSourceSelectable"}
+                                    componentConfig={{
+                                      onSelectedDataSources: ([{ id: dataSourceId, label: dataSourceLabel }]) => {
+                                        this.setState({ dataSourceId, dataSourceLabel });
+                                      },
+                                      notifications: services.notificationService,
+                                      savedObjects: core.savedObjects.client,
+                                      activeOption: (() => {
+                                        if (this.state.dataSourceId && this.state.dataSourceId !== "") {
+                                          return [
+                                            {
+                                              id: this.state.dataSourceId,
+                                              label: this.state.dataSourceLabel,
+                                            },
+                                          ];
+                                        }
+                                        return undefined;
+                                      })(),
+                                      fullWidth: false,
                                     }}
-                                    disableDataSourceSelectable={false}
-                                    notifications={services.notificationService}
-                                    savedObjects={core.savedObjects.client}
-                                    selectedOption={(() => {
-                                      if (this.state.dataSourceId && this.state.dataSourceId !== "") {
-                                        return [
-                                          {
-                                            id: this.state.dataSourceId,
-                                            label: this.state.dataSourceLabel,
-                                          },
-                                        ];
-                                      }
-                                      return undefined;
-                                    })()}
-                                    fullWidth={false}
-                                    hideLocalCluster={false}
                                   />
                                 )}
                               />
@@ -450,33 +449,29 @@ export default class Main extends Component<MainProps, MainState> {
                                 path={[ROUTES.CREATE_ROLLUP, ROUTES.CREATE_TRANSFORM]}
                                 render={() => (
                                   <DataSourceMenu
-                                    appName={"Index State Management"}
                                     setMenuMountPoint={this.props.setActionMenu}
-                                    showDataSourceView={this.state.dataSourceReadOnly}
-                                    showDataSourceSelectable={!this.state.dataSourceReadOnly}
-                                    disableDataSourceSelectable={this.state.dataSourceReadOnly}
-                                    dataSourceCallBackFunc={
-                                      this.state.dataSourceReadOnly
+                                    componentType={this.state.dataSourceReadOnly ? "DataSourceView" : "DataSourceSelectable"}
+                                    componentConfig={{
+                                      onSelectedDataSources: this.state.dataSourceReadOnly
                                         ? undefined
-                                        : ({ id: dataSourceId, label: dataSourceLabel }) => {
+                                        : ([{ id: dataSourceId, label: dataSourceLabel }]) => {
                                             this.setState({ dataSourceId, dataSourceLabel });
-                                          }
-                                    }
-                                    notifications={this.state.dataSourceReadOnly ? undefined : services.notificationService}
-                                    savedObjects={this.state.dataSourceReadOnly ? undefined : core.savedObjects.client}
-                                    selectedOption={(() => {
-                                      if (this.state.dataSourceId && this.state.dataSourceId !== "") {
-                                        return [
-                                          {
-                                            id: this.state.dataSourceId,
-                                            label: this.state.dataSourceLabel,
                                           },
-                                        ];
-                                      }
-                                      return undefined;
-                                    })()}
-                                    fullWidth={false}
-                                    hideLocalCluster={false}
+                                      notifications: this.state.dataSourceReadOnly ? undefined : services.notificationService,
+                                      savedObjects: this.state.dataSourceReadOnly ? undefined : core.savedObjects.client,
+                                      activeOption: (() => {
+                                        if (this.state.dataSourceId && this.state.dataSourceId !== "") {
+                                          return [
+                                            {
+                                              id: this.state.dataSourceId,
+                                              label: this.state.dataSourceLabel,
+                                            },
+                                          ];
+                                        }
+                                        return undefined;
+                                      })(),
+                                      fullWidth: false,
+                                    }}
                                   />
                                 )}
                               />
