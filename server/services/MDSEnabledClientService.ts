@@ -19,7 +19,10 @@ export abstract class MDSEnabledClientService {
     request: OpenSearchDashboardsRequest
   ): (endpoint: string, clientParams: Record<string, any>, options?: LegacyCallAPIOptions | undefined) => Promise<unknown> {
     const { dataSourceId = "" } = (request.query || {}) as { dataSourceId?: string };
+    console.log(this.dataSourceEnabled);
+    console.log(dataSourceId);
     if (this.dataSourceEnabled && dataSourceId && dataSourceId.trim().length != 0) {
+      console.log("am i here?");
       // non-zero data source id
       return context.dataSource.opensearch.legacy.getClient(dataSourceId).callAPI;
     } else {

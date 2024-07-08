@@ -19,14 +19,9 @@ import {
 } from "../../server/models/interfaces";
 import { ServerResponse } from "../../server/models/types";
 import { DocumentSMPolicy, DocumentSMPolicyWithMetadata, SMPolicy, Snapshot } from "../../models/interfaces";
+import { MDSEnabledClientService } from "./MDSEnabledClientService";
 
-export default class SnapshotManagementService {
-  httpClient: HttpSetup;
-
-  constructor(httpClient: HttpSetup) {
-    this.httpClient = httpClient;
-  }
-
+export default class SnapshotManagementService extends MDSEnabledClientService {
   getAllSnapshotsWithPolicy = async (): Promise<ServerResponse<GetSnapshotsResponse>> => {
     let url = `..${NODE_API._SNAPSHOTS}`;
     const response = (await this.httpClient.get(url)) as ServerResponse<GetSnapshotsResponse>;
@@ -35,43 +30,62 @@ export default class SnapshotManagementService {
 
   getSnapshot = async (snapshotId: string, repository: string): Promise<ServerResponse<GetSnapshot>> => {
     let url = `..${NODE_API._SNAPSHOTS}/${snapshotId}`;
-    const response = (await this.httpClient.get(url, { query: { repository } })) as ServerResponse<GetSnapshot>;
+    const queryObject = { repository };
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+
+    const response = (await this.httpClient.get(url, params)) as ServerResponse<GetSnapshot>;
     return response;
   };
 
   deleteSnapshot = async (snapshotId: string, repository: string): Promise<ServerResponse<AcknowledgedResponse>> => {
     let url = `..${NODE_API._SNAPSHOTS}/${snapshotId}`;
-    const response = (await this.httpClient.delete(url, { query: { repository } })) as ServerResponse<AcknowledgedResponse>;
+    const queryObject = { repository };
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.delete(url, params)) as ServerResponse<AcknowledgedResponse>;
     return response;
   };
 
   createSnapshot = async (snapshotId: string, repository: string, snapshot: Snapshot): Promise<ServerResponse<CreateSnapshotResponse>> => {
     let url = `..${NODE_API._SNAPSHOTS}/${snapshotId}`;
+    const queryObject = { repository };
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
     const response = (await this.httpClient.put(url, {
-      query: { repository },
       body: JSON.stringify(snapshot),
+      ...params,
     })) as ServerResponse<CreateSnapshotResponse>;
     return response;
   };
 
   restoreSnapshot = async (snapshotId: string, repository: string, options: object): Promise<ServerResponse<RestoreSnapshotResponse>> => {
     let url = `..${NODE_API._SNAPSHOTS}/${snapshotId}`;
+    const queryObject = { repository };
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
     const response = (await this.httpClient.post(url, {
-      query: { repository },
       body: JSON.stringify(options),
+      ...params,
     })) as ServerResponse<RestoreSnapshotResponse>;
     return response;
   };
 
   getIndexRecovery = async (): Promise<ServerResponse<GetIndexRecoveryResponse>> => {
     const url = NODE_API._RECOVERY;
-    const response = (await this.httpClient.get(url)) as ServerResponse<GetIndexRecoveryResponse>;
+    const queryObject = {};
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.get(url, params)) as ServerResponse<GetIndexRecoveryResponse>;
     return response;
   };
 
   createPolicy = async (policyId: string, policy: SMPolicy): Promise<ServerResponse<DocumentSMPolicy>> => {
     let url = `..${NODE_API.SMPolicies}/${policyId}`;
-    const response = (await this.httpClient.post(url, { body: JSON.stringify(policy) })) as ServerResponse<DocumentSMPolicy>;
+    const queryObject = {};
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.post(url, { body: JSON.stringify(policy), ...params })) as ServerResponse<DocumentSMPolicy>;
     return response;
   };
 
@@ -82,70 +96,103 @@ export default class SnapshotManagementService {
     primaryTerm: number
   ): Promise<ServerResponse<DocumentSMPolicy>> => {
     let url = `..${NODE_API.SMPolicies}/${policyId}`;
+    const queryObject = { seqNo, primaryTerm };
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
     const response = (await this.httpClient.put(url, {
-      query: { seqNo, primaryTerm },
       body: JSON.stringify(policy),
+      ...params,
     })) as ServerResponse<DocumentSMPolicy>;
     return response;
   };
 
   getPolicies = async (queryObject: HttpFetchQuery): Promise<ServerResponse<GetSMPoliciesResponse>> => {
     let url = `..${NODE_API.SMPolicies}`;
-    const response = (await this.httpClient.get(url, { query: queryObject })) as ServerResponse<GetSMPoliciesResponse>;
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    console.log(params);
+    const response = (await this.httpClient.get(url, params)) as ServerResponse<GetSMPoliciesResponse>;
     return response;
   };
 
   getPolicy = async (policyId: string): Promise<ServerResponse<DocumentSMPolicyWithMetadata>> => {
     const url = `..${NODE_API.SMPolicies}/${policyId}`;
-    const response = (await this.httpClient.get(url)) as ServerResponse<DocumentSMPolicyWithMetadata>;
+    const queryObject = {};
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.get(url, params)) as ServerResponse<DocumentSMPolicyWithMetadata>;
     return response;
   };
 
   deletePolicy = async (policyId: string): Promise<ServerResponse<boolean>> => {
     const url = `..${NODE_API.SMPolicies}/${policyId}`;
-    const response = (await this.httpClient.delete(url)) as ServerResponse<boolean>;
+    const queryObject = {};
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.delete(url, params)) as ServerResponse<boolean>;
     return response;
   };
 
   startPolicy = async (policyId: string): Promise<ServerResponse<boolean>> => {
     const url = `..${NODE_API.SMPolicies}/${policyId}/_start`;
-    const response = (await this.httpClient.post(url)) as ServerResponse<boolean>;
+    const queryObject = {};
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.post(url, params)) as ServerResponse<boolean>;
     return response;
   };
 
   stopPolicy = async (policyId: string): Promise<ServerResponse<boolean>> => {
     const url = `..${NODE_API.SMPolicies}/${policyId}/_stop`;
-    const response = (await this.httpClient.post(url)) as ServerResponse<boolean>;
+    const queryObject = {};
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.post(url, params)) as ServerResponse<boolean>;
     return response;
   };
 
   catRepositories = async (): Promise<ServerResponse<CatRepository[]>> => {
     const url = `..${NODE_API._REPOSITORIES}`;
-    const response = (await this.httpClient.get(url)) as ServerResponse<CatRepository[]>;
+    const queryObject = {};
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.get(url, params)) as ServerResponse<CatRepository[]>;
     return response;
   };
 
   catSnapshotIndices = async (indices: string): Promise<ServerResponse<CatIndex[]>> => {
     const url = `..${NODE_API._INDICES}/${indices}`;
-    const response = (await this.httpClient.get(url)) as ServerResponse<CatIndex[]>;
+    const queryObject = {};
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.get(url, params)) as ServerResponse<CatIndex[]>;
     return response;
   };
 
   getRepository = async (repo: string): Promise<ServerResponse<any>> => {
     const url = `..${NODE_API._REPOSITORIES}/${repo}`;
-    const response = (await this.httpClient.get(url)) as ServerResponse<any>;
+    const queryObject = {};
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.get(url, params)) as ServerResponse<any>;
     return response;
   };
 
   createRepository = async (repo: string, createRepoBody: CreateRepositoryBody): Promise<ServerResponse<any>> => {
     const url = `..${NODE_API._REPOSITORIES}/${repo}`;
-    const response = (await this.httpClient.put(url, { body: JSON.stringify(createRepoBody) })) as ServerResponse<any>;
+    const queryObject = {};
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.put(url, { body: JSON.stringify(createRepoBody), ...params })) as ServerResponse<any>;
     return response;
   };
 
   deleteRepository = async (repo: string): Promise<ServerResponse<any>> => {
     const url = `..${NODE_API._REPOSITORIES}/${repo}`;
-    const response = (await this.httpClient.delete(url)) as ServerResponse<any>;
+    const queryObject = {};
+    const query = this.patchQueryObjectWithDataSourceId(queryObject);
+    const params = query ? { query } : {};
+    const response = (await this.httpClient.delete(url, params)) as ServerResponse<any>;
     return response;
   };
 }

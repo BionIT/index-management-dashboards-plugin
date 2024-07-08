@@ -174,6 +174,7 @@ const dataSourceEnabledPaths: string[] = [
   ROUTES.CREATE_TRANSFORM,
   ROUTES.EDIT_TRANSFORM,
   ROUTES.TRANSFORM_DETAILS,
+  ROUTES.SNAPSHOT_POLICIES,
 ];
 
 export default class Main extends Component<MainProps, MainState> {
@@ -238,6 +239,7 @@ export default class Main extends Component<MainProps, MainState> {
       services.notificationService = new NotificationService(http, this.state.dataSourceId, this.props.multiDataSourceEnabled);
       services.rollupService = new RollupService(http, this.state.dataSourceId, this.props.multiDataSourceEnabled);
       services.transformService = new TransformService(http, this.state.dataSourceId, this.props.multiDataSourceEnabled);
+      services.snapshotManagementService = new SnapshotManagementService(http, this.state.dataSourceId, this.props.multiDataSourceEnabled);
     }
     return services;
   }
